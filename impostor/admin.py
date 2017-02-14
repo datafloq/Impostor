@@ -17,9 +17,9 @@ class ImpostorAdmin(admin.ModelAdmin):
 		request.method = 'GET'
 		return super(ImpostorAdmin, self).add_view(request, form_url, extra_context)
 
-	def change_view(self, request, form_url='', extra_context=None):
+	def change_view(self, request, object_id, form_url='', extra_context=None):
 		request.method = 'GET'
-		return super(ImpostorAdmin, self).change_view(request, form_url, extra_context)
+		return super(ImpostorAdmin, self).change_view(request, object_id, form_url, extra_context)
 
 	def delete_view(self, request, object_id, extra_context=None):
 		model = self.model
