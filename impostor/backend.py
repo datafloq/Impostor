@@ -43,48 +43,48 @@ class AuthBackend:
 
     def authenticate(self, username=None, password=None):
         auth_user = None
-        # try:
-        # Admin logging as user?
-        admin, uuser = [uname.strip() for uname in username.split(" as ")]
+        try:
+            # Admin logging as user?
+            admin, uuser = [uname.strip() for uname in username.split(" as ")]
 
-        # Check if admin exists and authenticates
-        get_query_with = {User.USERNAME_FIELD: admin}
-        admin_obj = User.objects.get(**get_query_with)
-        if (admin_obj.is_superuser or (IMPOSTOR_GROUP and IMPOSTOR_GROUP in admin_obj.groups.all(
-        ))) and admin_obj.check_password(password):
+            # Check if admin exists and authenticates
+            get_query_with = {User.USERNAME_FIELD: admin}
+            admin_obj = User.objects.get(**get_query_with)
+            if (admin_obj.is_superuser or (IMPOSTOR_GROUP and IMPOSTOR_GROUP in admin_obj.groups.all(
+            ))) and admin_obj.check_password(password):
 
-            get_query_with = {User.USERNAME_FIELD: uuser}
-            auth_user = User.objects.get(**get_query_with)
+                get_query_with = {User.USERNAME_FIELD: uuser}
+                auth_user = User.objects.get(**get_query_with)
 
-        if auth_user:
-            # Superusers can only be impersonated by other superusers
-            if auth_user.is_superuser and not admin_obj.is_superuser:
-                auth_user = None
-                raise Exception(
-                    "Superuser can only be impersonated by a superuser.")
+            if auth_user:
+                # Superusers can only be impersonated by other superusers
+                if auth_user.is_superuser and not admin_obj.is_superuser:
+                    auth_user = None
+                    raise Exception(
+                        "Superuser can only be impersonated by a superuser.")
 
-            # Try to find request object and maybe be lucky enough to find
-            # IP address there
-            request = find_request()
-            ip_addr = ''
-            if request:
-                ip_addr = request.META.get(
-                    'HTTP_X_FORWARDED_FOR', request.META.get(
-                        'HTTP_X_REAL_IP', request.META.get(
-                            'REMOTE_ADDR', '')))
-                # if there are several ip addresses separated by comma
-                # like HTTP_X_FORWARDED_FOR returns,
-                # take only the first one, which is the client's address
-                if ',' in ip_addr:
-                    ip_addr = ip_addr.split(',', 1)[0].strip()
-            log_entry = ImpostorLog.objects.create(
-                impostor=admin_obj, imposted_as=auth_user, impostor_ip=ip_addr)
+                # Try to find request object and maybe be lucky enough to find
+                # IP address there
+                request = find_request()
+                ip_addr = ''
+                if request:
+                    ip_addr = request.META.get(
+                        'HTTP_X_FORWARDED_FOR', request.META.get(
+                            'HTTP_X_REAL_IP', request.META.get(
+                                'REMOTE_ADDR', '')))
+                    # if there are several ip addresses separated by comma
+                    # like HTTP_X_FORWARDED_FOR returns,
+                    # take only the first one, which is the client's address
+                    if ',' in ip_addr:
+                        ip_addr = ip_addr.split(',', 1)[0].strip()
+                log_entry = ImpostorLog.objects.create(
+                    impostor=admin_obj, imposted_as=auth_user, impostor_ip=ip_addr)
 
-            if log_entry.token and request:
-                request.session['impostor_token'] = log_entry.token
+                if log_entry.token and request:
+                    request.session['impostor_token'] = log_entry.token
 
-        # except:  # Nope. Do nothing and let other backends handle it.
-        #     pass
+        except:  # Nope. Do nothing and let other backends handle it.
+            pass
         return auth_user
 
     def get_user(self, user_id):
