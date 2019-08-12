@@ -1,11 +1,9 @@
 from django.db import models
 from django.conf import settings
-# from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 # from django.contrib.auth.signals import user_logged_in, user_logged_outs
 import hashlib
 import time
-
-# Create your models here.
 
 
 class ImpostorLog(models.Model):
@@ -25,7 +23,8 @@ class ImpostorLog(models.Model):
     token = models.CharField(max_length=32, blank=True, db_index=True)
 
     def save(self, *args, **kwargs):
+        User = get_user_model()
         if not self.token and self.impostor:
             self.token = hashlib.sha1(
-                self.impostor.username + str(time.time())).hexdigest()[:32]
+                getattr(self.impostor, User.USERNAME_FIELD) + str(time.time())).hexdigest()[:32]
         super(ImpostorLog, self).save(*args, **kwargs)
