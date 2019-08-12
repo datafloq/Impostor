@@ -1,6 +1,7 @@
 from django.db import models
-from django.contrib.auth.models import User
-#from django.contrib.auth.signals import user_logged_in, user_logged_outs
+from django.conf import settings
+# from django.contrib.auth.models import User
+# from django.contrib.auth.signals import user_logged_in, user_logged_outs
 import hashlib
 import time
 
@@ -8,7 +9,7 @@ import time
 
 
 class ImpostorLog(models.Model):
-    impostor = models.ForeignKey(User, related_name='impostor', db_index=True)
+    impostor = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='impostor', db_index=True)
     imposted_as = models.ForeignKey(
         User,
         related_name='imposted_as',
