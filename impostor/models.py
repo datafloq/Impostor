@@ -11,7 +11,7 @@ import time
 class ImpostorLog(models.Model):
     impostor = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='impostor', db_index=True)
     imposted_as = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         related_name='imposted_as',
         verbose_name='Logged in as',
         db_index=True)
